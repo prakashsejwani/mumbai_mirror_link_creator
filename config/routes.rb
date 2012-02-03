@@ -1,5 +1,8 @@
 MumbaiMirrorLinkCreator::Application.routes.draw do
   get "link_creators/index"
+  
+  get "link_creators/generate_url"
+  
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

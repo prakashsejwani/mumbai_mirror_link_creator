@@ -19,4 +19,22 @@
 	$(function (){
 		$('#from').datepicker();
 		$('#to').datepicker();
+
+    var article_link = $('#article').html();
+    var video_link = $('#video').html();
+    var song_link = $('#song').html();
+    var tip_link = $('#tip').html(); 
+    var album_link = $('#album').html(); 
+    alert(article_link)
+    $.ajax({
+    url: article_link,
+    type:'HEAD',
+    error: function(){
+        alert("file not found");
+    },
+    success: function(){
+        alert("file found");
+    }
+});
+
 	})
