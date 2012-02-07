@@ -5,72 +5,107 @@
 <link type="text/css" href="jquery-ui-1.8.16.custom/css/smoothness/jquery-ui-1.8.16.custom.css" rel="stylesheet"/>
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
   <script type="text/javascript" src="jquery-ui-1.8.16.custom/js/jquery-ui-1.8.16.custom.min.js"></script>
-
+<script type="text/javascript" src="jquery-dateFormat/jquery.dateFormat-1.0.js"></script>
   <script type="text/javascript">
-  	$(function (){
-		$('#from').datepicker();
-		$('#to').datepicker();
-    var from = $('#from').val();
-    var to = $('#to').val(); 
-    $('#generate').live('click', function(){
-      if (from == "" && to == ""){
-        $("p#flash-error").html("Enter From Date and To date")
-        alert("Hello")
-      }
-      else{
-        if (from != "" && to != "" && from > to){
-         alert('Hi')
-         $("p#flash-error").html("From date is greater than To date")
-         
-        }
-        else {
-         $("p#flash-error").html()        
-         }
-         $("p#flash-error").html('')
-      } 
-    })
-})
+ // 	$(function (){
+     var startDate, endDate;
+
+		function formatDate(date, separator) {
+      return ("00" + (date.getMonth() + 1)).slice(-2) + separator +
+         ("00" + date.getDate()).slice(-2) + separator +
+          date.getFullYear();
+    }
+
+   function articleLink(id) {
+      var parts = ["<table><thead><tr><th>Link</th><th>Status</th></thead><tbody><tr>"];
+      var date = new Date(id);
+      var day = date.getDate()
+      var abbr = $.format.date(date, "MMMdd")
+      var link = "http://5m5.in/" + abbr + "Article"
+      var viewlink = "5m5.in/" + abbr +  "Article"
+      parts.push("<td><a href='" + link + "'>" + viewlink + "</a></td><td id='" + day + "'></td>")
+      parts.push("</tr></tbody></table>");
+      checkLink(link, day)
+      return parts.join("");
+      
+   }
+
+   function checkLink(link, id){
+     $.ajax({
+      url: link,
+      dataType: "json",
+      error: function(xhr, ajaxOptions, thrownError){
+          var td = "#" + id
+          $(td).text("Inactive")
+
+     },
+      success: function(response){
+       var td = "#" + id
+        $(td).text("Active")
+     }
+  });
+
+   }
+
+   function buildTable() {
+      var parts = ["<table><thead><tr><th>Date</th><th>Album</th><th>Article</th><th>Song</th><th>Tip</th><th>Video</th></tr></thead><tbody>"]
+    while (startDate <= endDate) {
+      var dateId = formatDate(startDate, "/");
+      parts.push("<tr>");
+      parts.push("<td>" + formatDate(startDate, "/") + "</td>");
+      parts.push("<td>" +  dateId + "</td>");
+      parts.push("<td>" +  articleLink(dateId) + "</td>");
+      parts.push("<td>" + dateId + "</td>");
+      parts.push("<td>" + dateId +  "</td>");
+      parts.push("<td>" + dateId + "</td>");
+      parts.push("</tr>");
+      startDate.setTime(startDate.getTime() + 86400000);
+    }  
+    parts.push("</tbody></table>");
+    $("#results").html(parts.join(""));
+  }
+
+function validateDateRange(sdText, edText) {
+  startDate = new Date(sdText);
+  endDate = new Date(edText);
+  return (startDate instanceof Date && endDate instanceof Date && startDate <= endDate);
+}
+
+function dateChanged(dateText, picker) {
+  var sdText = $("#start_date").val();
+  var edText = $("#end_date").val();
+  if (sdText && edText && validateDateRange(sdText, edText)) {
+    setTimeout(buildTable, 1); // so datepicker can close
+  }
+}
+
+//})
+
+$(document).ready(function() {
+  $("#start_date, #end_date").datepicker({onSelect: dateChanged})
+    .blur(function(event) {dateChanged()});
+});
 </script>
+
+<style type="text/css" media="screen">
+  div.date_choice {float: left; width: auto; margin-right: 2em;}
+  #results {clear: both;}
+  table {border-collapse: collapse;}
+  td, th {padding: .25em .5em; border: 1px solid #ccc;}
+  th {color: #fff; background-color: #333;}
+</style>
+
 </head>
 <body>
 <p id="flash-error" style="color:red"></p>
 <h1><b>Mumbai Mirror Link Creator</b></h1>
-<table>
-  <tr>
-	<td><b>From:</b></td><td><input id="from" name="from" type="text" /></td>
-<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	<td><b>To: </b></td><td >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input id="to" name="to" type="text" /></td>
-	 </tr>
-	 
-<tr>
-   <td><input  id="generate"  name="commit" type="submit" value="Generate" /></td>
- </tr>
-
- </table>
- <table cellpadding="0" cellspacing="50" border="0">
- <thead>
- <tr>
- <th>Date</th>
- <th>Articles</th>
- <th>Videos</th>
- <th>Songs</th>
- <th>Tip</th>
- <th>Ablums</th>
- </tr>
- </thead>
- <tboby>
-   <tr>
-   <td></td>
-   <td></td>
-   <td ></td>
-   <td></td>
-   <td></td>
-   <td></td>
-   </tr>
-
- </tbody>
- </table>
-
+<div class="date_choice">
+  <p>Start Date<br/><input id="start_date" type="text" size="10"/></p>
+</div>
+<div class="date_choice">
+  <p>End Date<br/><input id="end_date" type="text" size="10"/></p>
+</div>
+<div id="results"/>
 </body>
 </html>
 
